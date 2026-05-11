@@ -16,9 +16,75 @@ permissions:
 
 jobs:
 
-  build-and-push:
+  detect-changes:
+    name: Detect changed service paths
+    runs-on: ubuntu-latest
+    outputs:
+      agriculture-front: ${{ steps.filter.outputs.agriculture-front }}
+      gestion-user-pi-cloud: ${{ steps.filter.outputs.gestion-user-pi-cloud }}
+      assistance-service: ${{ steps.filter.outputs.assistance-service }}
+      eureka: ${{ steps.filter.outputs.eureka }}
+      gateway: ${{ steps.filter.outputs.gateway }}
+      gestion-event: ${{ steps.filter.outputs.gestion-event }}
+      gestion-formation: ${{ steps.filter.outputs.gestion-formation }}
+      gestion-pret: ${{ steps.filter.outputs.gestion-pret }}
+      gestion-reclamation: ${{ steps.filter.outputs.gestion-reclamation }}
+      gestion-vente-location: ${{ steps.filter.outputs.gestion-vente-location }}
+      gestion-inventory-and-appointment: ${{ steps.filter.outputs.gestion-inventory-and-appointment }}
+      livraison: ${{ steps.filter.outputs.livraison }}
+      payment-service: ${{ steps.filter.outputs.payment-service }}
+      farmer-support: ${{ steps.filter.outputs.farmer-support }}
+      gestion-forum: ${{ steps.filter.outputs.gestion-forum }}
+      pi-cloud-explorer: ${{ steps.filter.outputs.pi-cloud-explorer }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
+      - id: filter
+        name: Detect changed paths
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            agriculture-front:
+              - 'AgricultureFront/**'
+            gestion-user-pi-cloud:
+              - 'Gestion-User-Pi-Cloud/**'
+            assistance-service:
+              - 'pi-cloud222/Assistance-Service/Assistance-Service/**'
+            eureka:
+              - 'pi-cloud222/Eureka/**'
+            gateway:
+              - 'pi-cloud222/Gateway/**'
+            gestion-event:
+              - 'pi-cloud222/Gestion-Event/**'
+            gestion-formation:
+              - 'pi-cloud222/Gestion-Formation/**'
+            gestion-pret:
+              - 'pi-cloud222/Gestion-Pret/**'
+            gestion-reclamation:
+              - 'pi-cloud222/Gestion-Reclamation/**'
+            gestion-vente-location:
+              - 'pi-cloud222/Gestion-Vente-Location/**'
+            gestion-inventory-and-appointment:
+              - 'pi-cloud222/Gestion_Inventory_and_Appointment/**'
+            livraison:
+              - 'pi-cloud222/Livraison/**'
+            payment-service:
+              - 'pi-cloud222/Payment-Service/**'
+            farmer-support:
+              - 'pi-cloud222/farmer-support/**'
+            gestion-forum:
+              - 'pi-cloud222/gestion-forum/**'
+            pi-cloud-explorer:
+              - 'pi-cloud222/pi-cloud-Explorer/**'
+
+  build-and-push:
     name: Build and push ${{ matrix.name }}
+
+    needs: detect-changes
+
+    # run only when the detected changes include this matrix entry
+    if: ${{ needs.detect-changes.outputs[matrix.name] == 'true' }}
 
     runs-on: ubuntu-latest
 
@@ -142,7 +208,7 @@ jobs:
 
         with:
 
-          username: ${{ secrets.DOCKERHUB_USERNAME  }}
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
 
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
@@ -158,11 +224,8 @@ jobs:
 
           push: true
 
-          tags: |
-
-            ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:latest
-
-            ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:${{ github.sha }}
+          # push only the canonical :latest tag to update the existing image
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
 
           cache-from: type=gha
 
