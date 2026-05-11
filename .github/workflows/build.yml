@@ -38,17 +38,33 @@ jobs:
 
           fetch-depth: 0
 
-      - name: Fetch main branch
-
-        run: git fetch origin main --no-tags --depth=1
-
       - name: Determine changed services and build matrix
 
         id: set-matrix
 
+        shell: bash
+
         run: |
-          echo "Detecting changes compared to origin/main..."
-          CHANGED_FILES=$(git diff --name-only origin/main...HEAD || true)
+          set -euo pipefail
+
+          BASE_SHA="${{ github.event.before }}"
+
+          if [ "${GITHUB_EVENT_NAME}" != "push" ] || [ -z "$BASE_SHA" ] || [ "$BASE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            if git rev-parse HEAD^ >/dev/null 2>&1; then
+              BASE_SHA="$(git rev-parse HEAD^)"
+            else
+              BASE_SHA=""
+            fi
+          fi
+
+          if [ -z "$BASE_SHA" ]; then
+            echo "No valid base SHA found. Building all services." >&2
+            CHANGED_FILES="$(git ls-files)"
+          else
+            echo "Detecting changes compared to $BASE_SHA..." >&2
+            CHANGED_FILES="$(git diff --name-only "$BASE_SHA" "$GITHUB_SHA" || true)"
+          fi
+
           echo "Changed files:" >&2
           echo "$CHANGED_FILES" >&2
 

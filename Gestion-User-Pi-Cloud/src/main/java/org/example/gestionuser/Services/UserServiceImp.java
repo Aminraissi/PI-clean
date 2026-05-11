@@ -17,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 public class UserServiceImp implements IUser{
     private UserRepo ur;
+    private IHachageService hachageService;
     @Override
     public List<User> getAllUsers() {
         return ur.findAll();
@@ -74,7 +75,7 @@ public class UserServiceImp implements IUser{
         User user = ur.findByTelephone(telephone)
                 .orElseThrow(() -> new RuntimeException("No account found with this phone number"));
 
-        user.setMotDePasse(newPassword);
+        user.setMotDePasse(hachageService.hashPassword(newPassword));
         return ur.save(user);
     }
 
@@ -125,7 +126,7 @@ public class UserServiceImp implements IUser{
         if (request.getPhoto() != null) user.setPhoto(request.getPhoto());
         if (request.getEmail() != null) user.setEmail(request.getEmail());
         if (request.getMotDePasse() != null && !request.getMotDePasse().isBlank()) {
-            user.setMotDePasse(request.getMotDePasse());
+            user.setMotDePasse(hachageService.hashPassword(request.getMotDePasse()));
         }
         if (request.getTelephone() != null) user.setTelephone(request.getTelephone());
         if (request.getRegion() != null) user.setRegion(request.getRegion());
