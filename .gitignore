@@ -1,0 +1,56 @@
+# Java
+# Java
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+*.swp
+.DS_Store
+
+# Node (for Frontends)
+node_modules/
+dist/
+.angular/
+**/.angular/
+
+# Secrets (Optional, use environment variables instead)
+# Ignore local property files that may contain secrets
+**/application-local.properties
+**/application-local.yml
+
+# Ignore Maven build outputs and generated classes
+**/target/
+
+# Ignore Python virtualenvs accidentally checked in
+**/venv/
+
+# Ignore uploads and runtime artifacts
+uploads/
+
+# Build artifacts
+*/target/
+**/target/
+target/
+.gradle/
+build/
+dist/
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+# Environment files with secrets (never commit these)
+src/main/resources/application-local.properties
+src/main/resources/application-dev.properties
+*/src/main/resources/application-local.properties
+*/src/main/resources/application-dev.properties
+**/src/main/resources/application-local.properties
+**/src/main/resources/application-dev.properties
+# OS files
+.DS_Store
+Thumbs.db

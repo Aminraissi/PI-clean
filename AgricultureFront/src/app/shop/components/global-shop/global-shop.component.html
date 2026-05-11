@@ -1,0 +1,165 @@
+<div class="gs-wrapper">
+
+  <!-- Header -->
+  <div class="gs-header">
+    <button class="btn-back" *ngIf="back.observers.length" (click)="back.emit()">← Retour</button>
+    <div class="gs-header-info">
+      <span class="gs-icon">🏪</span>
+      <div>
+        <h1 class="gs-title">Veterinary Shop</h1>
+        <p class="gs-subtitle">{{ products.length }} products · {{ inStockCount }} in stock</p>
+      </div>
+    </div>
+    <!-- Cart icon -->
+    <button class="cart-fab" (click)="openCart()">
+      <i class="fas fa-shopping-cart"></i>
+      <span class="cart-fab-badge" *ngIf="cartService.count > 0">{{ cartService.count }}</span>
+    </button>
+  </div>
+
+  <!-- Active vet banner -->
+  <div class="active-vet-banner" *ngIf="cartService.currentVetId !== null">
+    <i class="fas fa-info-circle"></i>
+    Current cart: products from <strong>Dr. {{ cartService.currentVetNom }}</strong>.
+    Products from other veterinarians cannot be mixed.
+    <button class="btn-clear-cart" (click)="cartService.clear()">Clear Cart</button>
+  </div>
+  </div>
+
+  <!-- AI Search Panel -->
+  <div class="ai-panel">
+    <div class="ai-panel-header" (click)="showAiPanel = !showAiPanel">
+      <div class="ai-panel-label">
+        <span class="ai-icon">🤖</span>
+        <span>Intelligent search by AI</span>
+        <span class="ai-hint">Describe what you are looking for in natural language</span>
+      </div>
+      <i class="fas" [ngClass]="showAiPanel ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+    </div>
+    <div class="ai-panel-body" *ngIf="showAiPanel">
+      <div class="ai-input-row">
+        <input
+          type="text"
+          [(ngModel)]="aiQuery"
+          placeholder="ex: vaccin pour bovins dans la région de Tunis..."
+          class="ai-input"
+          (keydown.enter)="searchAI()">
+        <button class="btn-ai-search" (click)="searchAI()" [disabled]="aiLoading || !aiQuery.trim()">
+          <span *ngIf="!aiLoading"><i class="fas fa-magic"></i> Search</span>
+          <span *ngIf="aiLoading"><i class="fas fa-spinner fa-spin"></i> Analyzing...</span>
+        </button>
+      </div>
+      <div class="ai-examples">
+        <span class="ai-ex-label">Examples:</span>
+        <button class="ai-ex-btn" (click)="aiQuery='vaccin pour vaches'; searchAI()">Cattle vaccine</button>
+        <button class="ai-ex-btn" (click)="aiQuery='médicament à Sfax'; searchAI()">Medication in Sfax</button>
+        <button class="ai-ex-btn" (click)="aiQuery='produits périssables à Tunis'; searchAI()">Perishable products in Tunis</button>
+      </div>
+      <div *ngIf="aiError" class="ai-error">{{ aiError }}</div>
+      <div *ngIf="aiResults !== null && !aiLoading" class="ai-results-info">
+        <span *ngIf="aiResults.length > 0">
+          🎯 The AI has found <strong>{{ aiResults.length }}</strong> product(s) matching your search.
+        </span>
+        <span *ngIf="aiResults.length === 0">
+          😕 No products found for this search.
+        </span>
+        <button class="btn-clear-ai" (click)="clearAI()">✕ Reset</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="gs-filters">
+    <div class="filter-search-wrap">
+      <i class="fas fa-search filter-search-icon"></i>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Search product or veterinarian..." class="filter-search">
+    </div>
+    <select [(ngModel)]="filterCat" class="filter-select">
+      <option *ngFor="let c of categories" [value]="c.value">{{ c.label }}</option>
+    </select>
+    <select [(ngModel)]="filterRegion" class="filter-select">
+      <option value="">All regions</option>
+      <option *ngFor="let r of regions" [value]="r">📍 {{ r }}</option>
+    </select>
+  </div>
+
+  <!-- States -->
+  <div *ngIf="loading" class="gs-loader"><div class="spinner"></div><p>Chargement...</p></div>
+  <div *ngIf="error && !loading" class="gs-error">{{ error }}</div>
+  <div *ngIf="!loading && displayProducts.length === 0 && !error" class="gs-empty">
+    <div class="empty-icon">🔍</div>
+    <h3>No products found</h3>
+    <p>Modify your filters or search.</p>
+    <button (click)="searchTerm=''; filterCat=''; filterRegion=''; clearAI()">Reset</button>
+  </div>
+
+  <!-- Products grid -->
+  <div class="gs-grid" *ngIf="!loading && displayProducts.length > 0">
+    <div *ngFor="let p of displayProducts"
+         class="gs-card"
+         [class.out]="!(( p.currentQuantity??0)>0)"
+         (click)="openDetail(p)">
+
+      <!-- Image -->
+      <div class="gscard-img-wrap">
+        <img *ngIf="imageUrl(p)" [src]="imageUrl(p)" [alt]="p.nom" class="gscard-img">
+        <div *ngIf="!imageUrl(p)" class="gscard-img-placeholder">{{ categoryEmoji(p.categorie) }}</div>
+        <div class="gscard-stock" [class.in]="(p.currentQuantity??0)>0" [class.out]="!((p.currentQuantity??0)>0)">
+          {{ (p.currentQuantity??0)>0 ? '✔ In stock' : '✖ Out of stock' }}
+        </div>
+        <div class="gscard-cart-badge" *ngIf="cartService.isInCart(p.id)">
+          <i class="fas fa-check"></i>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div class="gscard-body">
+        <div class="gscard-cat">{{ categoryLabel(p.categorie) }}</div>
+        <h3 class="gscard-name">{{ p.nom }}</h3>
+        <div class="gscard-vet">
+          <i class="fas fa-user-md"></i>
+          <span>Dr. {{ vetName(p) }}</span>
+        </div>
+        <div class="gscard-region" *ngIf="vetRegion(p)">
+          <i class="fas fa-map-marker-alt"></i>
+          <span>{{ vetRegion(p) }}</span>
+        </div>
+        <p *ngIf="p.description" class="gscard-desc">
+          {{ p.description | slice:0:60 }}{{ (p.description?.length??0)>60 ? '…' : '' }}
+        </p>
+        <div class="gscard-footer">
+          <span class="gscard-price">{{ p.prixVente | number:'1.2-2' }} DT</span>
+          <span class="gscard-detail">View detail →</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+<!-- Product Detail -->
+<app-product-detail
+  *ngIf="selectedProduct"
+  [product]="selectedProduct"
+  [vetId]="selectedProduct.owner?.id ?? 0"
+  [vetNom]="vetName(selectedProduct)"
+  [vetRegion]="vetRegion(selectedProduct)"
+  (close)="closeDetail()"
+  (openCart)="openCart(); closeDetail()">
+</app-product-detail>
+
+<!-- Cart Drawer -->
+<app-cart-drawer
+  *ngIf="showCart"
+  (close)="closeCart()"
+  (checkout)="openCheckout()">
+</app-cart-drawer>
+
+<!-- Checkout -->
+<app-checkout
+  *ngIf="showCheckout"
+  (close)="closeCheckout()"
+  (success)="onPaymentSuccess()">
+</app-checkout>
+
+<!-- Conflict Dialog (mono-vétérinaire) -->
+<app-cart-conflict></app-cart-conflict>

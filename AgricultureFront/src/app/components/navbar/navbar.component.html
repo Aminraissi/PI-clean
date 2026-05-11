@@ -1,0 +1,110 @@
+<header class="navbar" [class.scrolled]="isScrolled">
+  <div class="container">
+    <nav class="nav-inner">
+
+      <!-- Logo (gauche) -->
+      <a class="logo" (click)="navigate('/')">
+        <img src="assets/images/logo.png" alt="GreenRoots Logo" class="logo-img">
+        <span class="logo-text notranslate" translate="no">GreenRoots</span>
+      </a>
+
+      <!-- Nav links (centre) -->
+      <ul class="nav-links" [class.open]="isMobileMenuOpen">
+
+        <li *ngFor="let link of visibleNavLinks">
+          <a [class.active]="activeLink === link.route"
+             (click)="navigateTo(link)">
+            {{ link.label }}
+          </a>
+        </li>
+
+        <!-- Dropdown More -->
+        <li class="dropdown-wrap" *ngIf="visibleDropdownLinks.length > 0">
+          <a class="dropdown-trigger"
+             [class.active]="isDropdownActive()"
+             (click)="toggleDropdown($event)">
+            More
+            <i class="fas fa-chevron-down dropdown-arrow"
+               [class.rotated]="moreDropdownOpen"></i>
+          </a>
+          <ul class="dropdown-menu" *ngIf="moreDropdownOpen">
+            <li *ngFor="let d of visibleDropdownLinks"
+                (mouseleave)="hideSubmenu()">
+              <a class="dropdown-item"
+                 [class.active]="isDropdownLinkActive(d)"
+                 [class.has-submenu]="d.hasSubmenu"
+                 (click)="toggleOrNavigate(d)"
+                 (mouseenter)="showSubmenu(d)">
+                <i [class]="d.icon"></i>
+                <span>{{ d.label }}</span>
+                <i *ngIf="d.hasSubmenu" class="fas fa-chevron-right submenu-arrow"></i>
+              </a>
+            </li>
+          </ul>
+          <ul class="submenu" [class.active]="activeSubmenu"
+              (mouseenter)="keepSubmenu()"
+              (mouseleave)="hideSubmenu()">
+            <li *ngFor="let sub of activeSubmenu">
+              <a class="submenu-item"
+                 [class.active]="activeLink === sub.route"
+                 (click)="navigate(sub.route)">
+                <i [class]="sub.icon"></i>
+                <span>{{ sub.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </li>
+
+        <!-- Mobile only CTA -->
+        <li class="mobile-cta">
+          <button class="btn-signup" (click)="signUp()">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </button>
+        </li>
+      </ul>
+
+      <!-- Auth buttons (droite) -->
+      <div class="nav-actions">
+        <div class="language-switcher">
+          <button
+            type="button"
+            class="lang-trigger"
+            aria-label="Switch language"
+            title="Switch language"
+            (click)="toggleLanguageMenu($event)">
+            <i class="fas fa-language" aria-hidden="true"></i>
+            <i class="fas fa-chevron-down lang-chevron" [class.open]="isLanguageMenuOpen" aria-hidden="true"></i>
+          </button>
+
+          <div class="lang-menu" *ngIf="isLanguageMenuOpen" (click)="$event.stopPropagation()">
+            <button
+              type="button"
+              class="lang-option"
+              *ngFor="let lang of languageOptions"
+              [class.active]="selectedLanguage === lang.code"
+              (click)="onLanguageChange(lang.code)">
+              <span>{{ lang.label }}</span>
+              <i *ngIf="selectedLanguage === lang.code" class="fas fa-check" aria-hidden="true"></i>
+            </button>
+          </div>
+        </div>
+
+        <ng-container *ngIf="!isLoggedIn">
+          <button class="btn-signin" (click)="signIn()">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+          <button class="btn-signup" (click)="signUp()">
+            <i class="fas fa-user-plus"></i> Sign Up
+          </button>
+        </ng-container>
+        <ng-container *ngIf="isLoggedIn">
+          <button class="btn-logout" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sign Out
+          </button>
+        </ng-container>
+      </div>
+    </nav>
+  </div>
+
+  <div id="google_translate_element" aria-hidden="true"></div>
+</header>

@@ -1,0 +1,118 @@
+<div class="page-header">
+  
+  <div>
+    <h1 class="pt">My Appointments</h1>
+    <p class="ps">Manage your consultation requests</p>
+  </div>
+</div>
+<div class="stats-grid" *ngIf="stats && !loading">
+  <div class="stat-card">
+    <span class="stat-label">Total RDV</span>
+    <strong class="stat-value">{{ stats.totalAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Pending</span>
+    <strong class="stat-value">{{ stats.pendingAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Accepted</span>
+    <strong class="stat-value">{{ stats.acceptedAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Today</span>
+    <strong class="stat-value">{{ stats.todayAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Upcoming</span>
+    <strong class="stat-value">{{ stats.upcomingAppointments }}</strong>
+  </div>
+
+  <div class="stat-card">
+    <span class="stat-label">Distinct Animals</span>
+    <strong class="stat-value">{{ stats.distinctAnimals }}</strong>
+  </div>
+</div>
+
+<!-- Filter tabs -->
+<div class="filter-tabs">
+  <button *ngFor="let f of filters"
+    class="ftab" [class.active]="filterStatus===f.value"
+    (click)="setFilter(f.value)">
+    {{ f.label }}
+    <span class="fbadge">{{ count(f.value) }}</span>
+  </button>
+</div>
+
+<div *ngIf="loading" class="sm"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+<div *ngIf="error"   class="sm err"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+
+<div class="empty" *ngIf="!loading && !error && filtered.length===0">
+  <i class="fas fa-calendar-check"></i>
+  <p>No appointments{{ filterStatus!=='ALL' ? ' with this status' : '' }}.</p>
+</div>
+
+<div class="appt-list" *ngIf="!loading && filtered.length>0">
+  <div class="appt-card" *ngFor="let a of filtered; trackBy:trackById">
+
+    <div class="card-top">
+      <span class="status-badge" [ngClass]="statusClass(a.appointmentStatus)">
+        {{ statusLabel(a.appointmentStatus) }}
+      </span>
+      <span class="appt-date">
+        <i class="fas fa-calendar-alt"></i>
+        {{ a.dateHeure | date:'EEE dd MMM yyyy' }} · {{ a.dateHeure | date:'HH:mm' }}
+      </span>
+    </div>
+
+    <div class="card-body">
+      <div class="info-row">
+        <div class="info-item">
+          <span class="il">Farmer</span>
+          <span class="iv">{{ a.farmer?.prenom || '—' }} {{ a.farmer?.nom || '' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Contact</span>
+          <span class="iv">{{ a.farmer?.telephone || a.farmer?.email || '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Animal</span>
+          <span class="iv">{{ a.animal ? a.animal.espece + ' · ' + a.animal.reference : '—' }}</span>
+        </div>
+        <div class="info-item">
+          <span class="il">Time Slot</span>
+          <span class="iv">{{ a.timeSlot ? a.timeSlot.startTime + ' – ' + a.timeSlot.endTime : '—' }}</span>
+        </div>
+      </div>
+      <div class="motif-row">
+        <span class="il">Reason:</span>
+        <span class="iv">{{ a.motif }}</span>
+      </div>
+      <div class="refusal-reason" *ngIf="a.appointmentStatus==='REFUSEE' && a.refusalReason">
+        <i class="fas fa-times-circle"></i> Refusal Reason: {{ a.refusalReason }}
+      </div>
+    </div>
+
+    <div class="card-footer" *ngIf="a.appointmentStatus==='EN_ATTENTE'">
+      <button class="btn-accept" (click)="accept(a)" [disabled]="actionLoading===a.id">
+        <i class="fas fa-check"></i> Accepter
+      </button>
+      <button class="btn-refuse" (click)="openRefuse(a)" [disabled]="actionLoading===a.id">
+        <i class="fas fa-times"></i> Refuser
+      </button>
+      <button class="btn-cancel-sm" (click)="cancel(a)" [disabled]="actionLoading===a.id">
+        Cancel
+      </button>
+    </div>
+    <div class="card-footer single" *ngIf="a.appointmentStatus==='ACCEPTEE'">
+      <button class="btn-cancel-sm" (click)="cancel(a)" [disabled]="actionLoading===a.id">
+        <i class="fas fa-ban"></i> Cancel Appointment
+      </button>
+    </div>
+
+  </div>
+</div>
+

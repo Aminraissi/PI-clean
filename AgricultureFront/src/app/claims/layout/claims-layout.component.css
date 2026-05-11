@@ -1,0 +1,19 @@
+.claims-shell {
+  min-height: 100vh;
+  background: #f4f7f4;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+   padding-top: 88px;
+  box-sizing: border-box;
+}
+
+.claims-content {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .claims-content {
+    padding: 16px;
+  }
+}

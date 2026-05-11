@@ -1,0 +1,39 @@
+<div class="page-header">
+  <div class="back-row">
+    <button class="back-btn" (click)="back.emit()"><i class="fas fa-arrow-left"></i> Retour</button>
+    <div>
+      <h1 class="page-title">Movement History</h1>
+      <p class="page-sub">History of all your operations</p>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="loading" class="state-msg"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+
+<div class="empty-state" *ngIf="!loading && movements.length === 0">
+  <i class="fas fa-exchange-alt"></i>
+  <p>No movements recorded.</p>
+</div>
+
+<table class="data-table" *ngIf="!loading && movements.length > 0">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Product</th>
+      <th>Type</th>
+      <th>Quantity</th>
+      <th>Reason</th>
+      <th>Note</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let m of movements">
+      <td>{{ m.dateMouvement | date:'dd/MM/yyyy HH:mm' }}</td>
+      <td><strong>{{ m.productName }}</strong></td>
+      <td><span class="type-badge" [ngClass]="typeClass(m.movementType)">{{ typeLabel(m.movementType) }}</span></td>
+      <td>{{ m.quantity }}</td>
+      <td>{{ reasonLabel(m.reason) }}</td>
+      <td class="note-cell">{{ m.note || '—' }}</td>
+    </tr>
+  </tbody>
+</table>

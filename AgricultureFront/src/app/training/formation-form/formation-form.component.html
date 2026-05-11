@@ -1,0 +1,171 @@
+<app-navbar></app-navbar>
+
+<div class="form-container">
+  <button (click)="goBack()" class="btn-back">
+    <i class="fas fa-arrow-left"></i> Back
+  </button>
+
+  <div class="form-header">
+    <h1>{{ isEditMode ? 'Edit training' : 'Create a new training' }}</h1>
+    <p>Fill in all required fields to continue</p>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    <i class="fas fa-exclamation-circle"></i>
+    {{ error }}
+  </div>
+
+  <div *ngIf="success" class="alert alert-success">
+    <i class="fas fa-check-circle"></i>
+    {{ success }}
+  </div>
+
+  <div *ngIf="isLoading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+  </div>
+
+  <form (ngSubmit)="onSubmit()" *ngIf="!isLoading" class="formation-form">
+    <div class="form-section">
+      <h2><i class="fas fa-info-circle"></i> General Information</h2>
+
+      <div class="form-group">
+        <label>Training title *</label>
+        <input
+          [(ngModel)]="formation.titre"
+          name="titre"
+          type="text"
+          placeholder="Training title"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label>Description *</label>
+        <textarea
+          [(ngModel)]="formation.description"
+          name="description"
+          placeholder="Describe your training..."
+          rows="5"
+          required
+        ></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Topic *</label>
+          <input
+            [(ngModel)]="formation.thematique"
+            name="thematique"
+            type="text"
+            placeholder="Example: Sustainable farming"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Language *</label>
+          <select [(ngModel)]="formation.langue" name="langue" required>
+            <option *ngFor="let lang of langues">{{ lang }}</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Training image</label>
+        <div class="image-upload-container">
+          <div *ngIf="imagePreview || formation.imageUrl" class="image-preview">
+            <img [src]="imagePreview || formation.imageUrl" [alt]="formation.titre" class="preview-image" />
+            <button type="button" (click)="removeImage()" class="remove-image-btn" title="Remove image">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="file-input-wrapper">
+            <input
+              type="file"
+              id="imageFile"
+              accept="image/*"
+              (change)="onFileSelected($event)"
+              style="display: none;"
+            />
+            <label for="imageFile" class="file-input-label">
+              <i class="fas fa-cloud-upload-alt"></i>
+              <span *ngIf="!selectedImageFile && !formation.imageUrl">Choose an image</span>
+              <span *ngIf="selectedImageFile">{{ selectedImageFile.name }}</span>
+            </label>
+          </div>
+        </div>
+        <small>Accepted formats: JPG, PNG, GIF. The image is optimized automatically before upload.</small>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2><i class="fas fa-graduation-cap"></i> Learning Details</h2>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Level *</label>
+          <select [(ngModel)]="formation.niveau" name="niveau" required>
+            <option *ngFor="let niveau of niveaux">{{ niveau }}</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Type *</label>
+          <select [(ngModel)]="formation.type" name="type" required>
+            <option value="PRESENTIEL">In person</option>
+            <option value="EN_LIGNE">Online</option>
+            <option value="HYBRIDE">Hybrid</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Status *</label>
+          <select [(ngModel)]="formation.statut" name="statut" required>
+            <option *ngFor="let status of statuts">{{ status }}</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-section">
+      <h2><i class="fas fa-euro-sign"></i> Pricing</h2>
+
+      <div class="form-group checkbox">
+        <input
+          [(ngModel)]="formation.estPayante"
+          name="estPayante"
+          type="checkbox"
+        />
+        <label>This training is paid</label>
+      </div>
+
+      <div *ngIf="formation.estPayante" class="form-group">
+        <label>Price (EUR) *</label>
+        <input
+          [(ngModel)]="formation.prix"
+          name="prix"
+          type="number"
+          placeholder="0.00"
+          step="0.01"
+          min="0"
+        />
+      </div>
+
+      <div *ngIf="!formation.estPayante" class="info-box">
+        <i class="fas fa-gift"></i>
+        <p>This training will be offered for free</p>
+      </div>
+    </div>
+
+    <div class="form-actions">
+      <button type="button" (click)="goBack()" class="btn-cancel" [disabled]="isSubmitting">
+        <i class="fas fa-times"></i> Cancel
+      </button>
+      <button type="submit" class="btn-submit" [disabled]="isSubmitting">
+        <i class="fas fa-save"></i> {{ isSubmitting ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}
+      </button>
+    </div>
+  </form>
+</div>

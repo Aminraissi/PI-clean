@@ -1,0 +1,99 @@
+<div class="modal-overlay" (click)="closed.emit()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2><i class="fas fa-paw" style="color:#2d6a2d;margin-right:8px;"></i>Animal Details</h2>
+      <button class="close-btn" (click)="closed.emit()"><i class="fas fa-times"></i></button>
+    </div>
+
+    <div class="modal-body">
+
+      <div *ngIf="loading" class="state-msg"><i class="fas fa-spinner fa-spin"></i> Loading…</div>
+      <div *ngIf="error" class="state-msg error">{{ error }}</div>
+
+      <ng-container *ngIf="detail && !loading">
+
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="info-lbl">Reference</span>
+            <span class="info-val ref">{{ detail.reference }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Species</span>
+            <span class="info-val">{{ detail.espece }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Weight</span>
+            <span class="info-val">{{ detail.poids }} kg</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Age</span>
+            <span class="info-val">{{ age(detail.dateNaissance) }} years</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Date of Birth</span>
+            <span class="info-val">{{ detail.dateNaissance | date:'dd/MM/yyyy' }}</span>
+          </div>
+          <div class="info-item">
+            <span class="info-lbl">Owner</span>
+            <span class="info-val">{{ detail.owner?.username || '-' }}</span>
+          </div>
+        </div>
+
+        <div class="section-title">
+          <i class="fas fa-syringe"></i> Vaccinations ({{ (detail.vaccinations || []).length }})
+        </div>
+        <div class="empty-sub" *ngIf="!(detail.vaccinations && detail.vaccinations.length)">No vaccinations recorded.</div>
+        <table class="sub-table" *ngIf="detail.vaccinations && detail.vaccinations.length">
+          <thead>
+            <tr>
+              <th>Vaccin</th>
+              <th>Date</th>
+              <th>Dose</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let v of detail.vaccinations">
+              <td>{{ v.vaccin || '—' }}</td>
+              <td>{{ v.dateVaccin ? (v.dateVaccin | date:'dd/MM/yyyy') : '-' }}</td>
+              <td>{{ v.dose ?? '—' }}</td>
+              <td>
+                <span class="status-badge" [ngClass]="v.status === 'DONE' ? 'st-done' : 'st-pending'">
+                  {{ v.status === 'DONE' ? 'Completed' : 'Pending' }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="section-title" style="margin-top:20px;">
+          <i class="fas fa-file-medical"></i> Health Records ({{ (detail.healthRecords || []).length }})
+        </div>
+        <div class="empty-sub" *ngIf="!(detail.healthRecords && detail.healthRecords.length)">No health records available.</div>
+        <table class="sub-table" *ngIf="detail.healthRecords && detail.healthRecords.length">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Diagnostic</th>
+              <th>Treatment</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let h of detail.healthRecords">
+              <td>{{ h.dateH ? (h.dateH | date:'dd/MM/yyyy') : '-' }}</td>
+              <td>{{ h.maladie || '-' }}</td>
+              <td>{{ h.traitement || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+      </ng-container>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-close" (click)="closed.emit()">Close</button>
+    </div>
+
+  </div>
+</div>

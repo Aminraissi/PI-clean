@@ -1,0 +1,43 @@
+<section class="chatbot-shell">
+  <div class="hero-card">
+    <div>
+      <p class="eyebrow">AI Veterinarian</p>
+      <h2>Intelligent Assistant for Farmers</h2>
+      <p class="hero-copy">
+        This interface is dedicated to the intelligent veterinary chatbot. It is separated from the ML prediction form.
+      </p>
+    </div>
+  </div>
+
+  <section class="chat-card">
+    <div class="chat-header">
+      <div>
+        <p class="eyebrow">Conversation IA</p>
+        <h3>Speak directly to the intelligent veterinarian</h3>
+      </div>
+      <p class="chat-tip">The chatbot takes the question directly from the farmer, without a symptoms form.</p>
+    </div>
+
+    <div class="chat-messages">
+      <article class="chat-message" *ngFor="let message of chatMessages" [class.mine]="message.role === 'farmer'">
+        <div class="bubble">
+          <span class="author">{{ message.role === 'farmer' ? 'Agriculteur' : 'IA' }}</span>
+          <p>{{ message.content }}</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="chat-composer" [formGroup]="chatForm">
+      <textarea
+        formControlName="question"
+        rows="4"
+        placeholder="Posez directement votre question ici, par exemple : ma vache tousse depuis deux jours, est ce urgent ?"></textarea>
+      <button type="button" (click)="sendChat()" [disabled]="chatting || !chatForm.get('question')?.value?.trim()">
+        {{ chatting ? 'Sending...' : 'Send to Chatbot' }}
+      </button>
+    </div>
+
+    <small class="error" *ngIf="hasChatError('question')">The question is required.</small>
+    <p class="error" *ngIf="chatError">{{ chatError }}</p>
+  </section>
+</section>
