@@ -1,6 +1,7 @@
 package org.example.gestionuser.entities;
 
 import jakarta.persistence.*;
+import org.example.gestionuser.entities.ProfileValidationStatusConverter;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,7 +27,8 @@ public class User {
     private StatutCompte statutCompte;
     @Enumerated(EnumType.STRING)
     private EmailVerificationStatus emailVerificationStatus;
-    @Enumerated(EnumType.STRING)
+    // Use a converter to tolerate null/empty/unknown DB values and map them to a safe default
+    @Convert(converter = ProfileValidationStatusConverter.class)
     private ProfileValidationStatus profileValidationStatus;
     private String motifRefus;
     @Enumerated(EnumType.STRING)
