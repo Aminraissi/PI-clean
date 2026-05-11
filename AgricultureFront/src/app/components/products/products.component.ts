@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 })
 export class ProductsComponent {
   activeFilter = 'all';
+  readonly fallbackProductImage = 'assets/images/ve.jpg';
 
   categories = [
     { id: 'all',        label: 'All Products' },
@@ -50,7 +51,7 @@ export class ProductsComponent {
     },
     {
       id: 7, category: 'vegetables',
-      image: 'https://images.unsplash.com/photo-1596768083695-1a95eed3b9c5?w=400&auto=format&fit=crop',
+      image: 'https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=400&auto=format&fit=crop',
       name: 'Purple Eggplant',     price: 3.49,  oldPrice: null,  badge: 'Fresh',   rating: 4, reviews: 21
     },
     {
@@ -93,6 +94,11 @@ export class ProductsComponent {
 
   getStars(rating: number) {
     return Array(5).fill(0).map((_, i) => i < rating);
+  }
+
+  onImageError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.src = this.fallbackProductImage;
   }
 
   getBadgeClass(badge: string) {

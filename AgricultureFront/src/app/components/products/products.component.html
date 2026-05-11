@@ -31,7 +31,7 @@
 
         <!-- Image -->
         <div class="product-img">
-          <img [src]="p.image" [alt]="p.name">
+          <img [src]="p.image" [alt]="p.name" (error)="onImageError($event)">
           <span class="product-badge" [class]="getBadgeClass(p.badge)">{{ p.badge }}</span>
 
           <!-- Overlay actions -->

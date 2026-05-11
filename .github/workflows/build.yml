@@ -16,9 +16,90 @@ permissions:
 
 jobs:
 
+  detect-changes:
+
+    name: Detect changed microservices
+
+    runs-on: ubuntu-latest
+
+    outputs:
+
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+
+      any_changed: ${{ steps.set-matrix.outputs.any_changed }}
+
+    steps:
+
+      - name: Checkout repository
+
+        uses: actions/checkout@v4
+
+        with:
+
+          fetch-depth: 0
+
+      - name: Fetch main branch
+
+        run: git fetch origin main --no-tags --depth=1
+
+      - name: Determine changed services and build matrix
+
+        id: set-matrix
+
+        run: |
+          echo "Detecting changes compared to origin/main..."
+          CHANGED_FILES=$(git diff --name-only origin/main...HEAD || true)
+          echo "Changed files:" >&2
+          echo "$CHANGED_FILES" >&2
+
+          MATRIX_INCLUDES=()
+          add_entry() { name=$1; context=$2; image=$3; MATRIX_INCLUDES+=("{\"name\":\"$name\",\"context\":\"$context\",\"image\":\"$image\"}"); }
+
+          if echo "$CHANGED_FILES" | grep -q '^AgricultureFront/'; then add_entry "agriculture-front" "./AgricultureFront" "agriculture-front"; fi
+          if echo "$CHANGED_FILES" | grep -q '^Gestion-User-Pi-Cloud/'; then add_entry "gestion-user-pi-cloud" "./Gestion-User-Pi-Cloud" "gestion-user-pi-cloud"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Assistance-Service/Assistance-Service/'; then add_entry "assistance-service" "./pi-cloud222/Assistance-Service/Assistance-Service" "assistance-service"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Eureka/'; then add_entry "eureka" "./pi-cloud222/Eureka/eureka" "eureka"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gateway/'; then add_entry "gateway" "./pi-cloud222/Gateway" "gateway"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gestion-Event/'; then add_entry "gestion-event" "./pi-cloud222/Gestion-Event" "gestion-event"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gestion-Formation/'; then add_entry "gestion-formation" "./pi-cloud222/Gestion-Formation/Gestion-Formation" "gestion-formation"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gestion-Pret/'; then add_entry "gestion-pret" "./pi-cloud222/Gestion-Pret" "gestion-pret"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gestion-Reclamation/'; then add_entry "gestion-reclamation" "./pi-cloud222/Gestion-Reclamation" "gestion-reclamation"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gestion-Vente-Location/'; then add_entry "gestion-vente-location" "./pi-cloud222/Gestion-Vente-Location" "gestion-vente-location"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Gestion_Inventory_and_Appointment/'; then add_entry "gestion-inventory-and-appointment" "./pi-cloud222/Gestion_Inventory_and_Appointment" "gestion-inventory-and-appointment"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Livraison/'; then add_entry "livraison" "./pi-cloud222/Livraison/Livraison" "livraison"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/Payment-Service/'; then add_entry "payment-service" "./pi-cloud222/Payment-Service" "payment-service"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/farmer-support/'; then add_entry "farmer-support" "./pi-cloud222/farmer-support/farmer-support" "farmer-support"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/gestion-forum/'; then add_entry "gestion-forum" "./pi-cloud222/gestion-forum/ForumsService" "gestion-forum"; fi
+          if echo "$CHANGED_FILES" | grep -q '^pi-cloud222/pi-cloud-Explorer/'; then add_entry "pi-cloud-explorer" "./pi-cloud222/pi-cloud-Explorer/Explorer" "pi-cloud-explorer"; fi
+
+          if [ ${#MATRIX_INCLUDES[@]} -eq 0 ]; then
+            echo "No services changed. Skipping build." >&2
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+            echo "any_changed=false" >> $GITHUB_OUTPUT
+          else
+            matrix_json="{\"include\":["
+            first=true
+            for item in "${MATRIX_INCLUDES[@]}"; do
+              if [ "$first" = true ]; then
+                matrix_json+="$item"
+                first=false
+              else
+                matrix_json+=",$item"
+              fi
+            done
+            matrix_json+="]}"
+            echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
+            echo "any_changed=true" >> $GITHUB_OUTPUT
+            echo "Matrix generated: $matrix_json" >&2
+          fi
+
   build-and-push:
 
     name: Build and push ${{ matrix.name }}
+
+    needs: detect-changes
+
+    if: needs.detect-changes.outputs.any_changed == 'true'
 
     runs-on: ubuntu-latest
 
@@ -26,105 +107,7 @@ jobs:
 
       fail-fast: false
 
-      matrix:
-
-        include:
-
-          - name: agriculture-front
-
-            context: ./AgricultureFront
-
-            image: agriculture-front
-
-          - name: gestion-user-pi-cloud
-
-            context: ./Gestion-User-Pi-Cloud
-
-            image: gestion-user-pi-cloud
-
-          - name: assistance-service
-
-            context: ./pi-cloud222/Assistance-Service/Assistance-Service
-
-            image: assistance-service
-
-          - name: eureka
-
-            context: ./pi-cloud222/Eureka/eureka
-
-            image: eureka
-
-          - name: gateway
-
-            context: ./pi-cloud222/Gateway
-
-            image: gateway
-
-          - name: gestion-event
-
-            context: ./pi-cloud222/Gestion-Event
-
-            image: gestion-event
-
-          - name: gestion-formation
-
-            context: ./pi-cloud222/Gestion-Formation/Gestion-Formation
-
-            image: gestion-formation
-
-          - name: gestion-pret
-
-            context: ./pi-cloud222/Gestion-Pret
-
-            image: gestion-pret
-
-          - name: gestion-reclamation
-
-            context: ./pi-cloud222/Gestion-Reclamation
-
-            image: gestion-reclamation
-
-          - name: gestion-vente-location
-
-            context: ./pi-cloud222/Gestion-Vente-Location
-
-            image: gestion-vente-location
-
-          - name: gestion-inventory-and-appointment
-
-            context: ./pi-cloud222/Gestion_Inventory_and_Appointment
-
-            image: gestion-inventory-and-appointment
-
-          - name: livraison
-
-            context: ./pi-cloud222/Livraison/Livraison
-
-            image: livraison
-
-          - name: payment-service
-
-            context: ./pi-cloud222/Payment-Service
-
-            image: payment-service
-
-          - name: farmer-support
-
-            context: ./pi-cloud222/farmer-support/farmer-support
-
-            image: farmer-support
-
-          - name: gestion-forum
-
-            context: ./pi-cloud222/gestion-forum/ForumsService
-
-            image: gestion-forum
-
-          - name: pi-cloud-explorer
-
-            context: ./pi-cloud222/pi-cloud-Explorer/Explorer
-
-            image: pi-cloud-explorer
+      matrix: ${{ fromJson(needs.detect-changes.outputs.matrix) }}
 
     steps:
 
@@ -162,7 +145,6 @@ jobs:
 
             ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:latest
 
-            ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:${{ github.sha }}
 
           cache-from: type=gha
 
