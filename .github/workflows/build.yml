@@ -16,74 +16,9 @@ permissions:
 
 jobs:
 
-  detect-changes:
-    name: Detect changed service paths
-    runs-on: ubuntu-latest
-    outputs:
-      agriculture-front: ${{ steps.filter.outputs.agriculture-front }}
-      gestion-user-pi-cloud: ${{ steps.filter.outputs.gestion-user-pi-cloud }}
-      assistance-service: ${{ steps.filter.outputs.assistance-service }}
-      eureka: ${{ steps.filter.outputs.eureka }}
-      gateway: ${{ steps.filter.outputs.gateway }}
-      gestion-event: ${{ steps.filter.outputs.gestion-event }}
-      gestion-formation: ${{ steps.filter.outputs.gestion-formation }}
-      gestion-pret: ${{ steps.filter.outputs.gestion-pret }}
-      gestion-reclamation: ${{ steps.filter.outputs.gestion-reclamation }}
-      gestion-vente-location: ${{ steps.filter.outputs.gestion-vente-location }}
-      gestion-inventory-and-appointment: ${{ steps.filter.outputs.gestion-inventory-and-appointment }}
-      livraison: ${{ steps.filter.outputs.livraison }}
-      payment-service: ${{ steps.filter.outputs.payment-service }}
-      farmer-support: ${{ steps.filter.outputs.farmer-support }}
-      gestion-forum: ${{ steps.filter.outputs.gestion-forum }}
-      pi-cloud-explorer: ${{ steps.filter.outputs.pi-cloud-explorer }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - id: filter
-        name: Detect changed paths
-        uses: dorny/paths-filter@v2
-        with:
-          filters: |
-            agriculture-front:
-              - 'AgricultureFront/**'
-            gestion-user-pi-cloud:
-              - 'Gestion-User-Pi-Cloud/**'
-            assistance-service:
-              - 'pi-cloud222/Assistance-Service/Assistance-Service/**'
-            eureka:
-              - 'pi-cloud222/Eureka/**'
-            gateway:
-              - 'pi-cloud222/Gateway/**'
-            gestion-event:
-              - 'pi-cloud222/Gestion-Event/**'
-            gestion-formation:
-              - 'pi-cloud222/Gestion-Formation/**'
-            gestion-pret:
-              - 'pi-cloud222/Gestion-Pret/**'
-            gestion-reclamation:
-              - 'pi-cloud222/Gestion-Reclamation/**'
-            gestion-vente-location:
-              - 'pi-cloud222/Gestion-Vente-Location/**'
-            gestion-inventory-and-appointment:
-              - 'pi-cloud222/Gestion_Inventory_and_Appointment/**'
-            livraison:
-              - 'pi-cloud222/Livraison/**'
-            payment-service:
-              - 'pi-cloud222/Payment-Service/**'
-            farmer-support:
-              - 'pi-cloud222/farmer-support/**'
-            gestion-forum:
-              - 'pi-cloud222/gestion-forum/**'
-            pi-cloud-explorer:
-              - 'pi-cloud222/pi-cloud-Explorer/**'
-
   build-and-push:
+
     name: Build and push ${{ matrix.name }}
-
-    needs: detect-changes
-
-    # run only when the detected changes include this matrix entry (per-step checks below)
 
     runs-on: ubuntu-latest
 
@@ -197,50 +132,42 @@ jobs:
 
         uses: actions/checkout@v4
 
-      - name: Print change-detection debug info
-        run: |
-          echo "matrix.name=${{ matrix.name }}"
-          echo "changed=${{ needs.detect-changes.outputs[matrix.name] }}"
-          echo "detect-changes outputs:"
-          echo "  agriculture-front=${{ needs.detect-changes.outputs['agriculture-front'] }}"
-          echo "  gestion-user-pi-cloud=${{ needs.detect-changes.outputs['gestion-user-pi-cloud'] }}"
-          echo "  assistance-service=${{ needs.detect-changes.outputs['assistance-service'] }}"
-          echo "  eureka=${{ needs.detect-changes.outputs['eureka'] }}"
-          echo "  gateway=${{ needs.detect-changes.outputs['gateway'] }}"
-          echo "  gestion-event=${{ needs.detect-changes.outputs['gestion-event'] }}"
-          echo "  gestion-formation=${{ needs.detect-changes.outputs['gestion-formation'] }}"
-          echo "  gestion-pret=${{ needs.detect-changes.outputs['gestion-pret'] }}"
-          echo "  gestion-reclamation=${{ needs.detect-changes.outputs['gestion-reclamation'] }}"
-          echo "  gestion-vente-location=${{ needs.detect-changes.outputs['gestion-vente-location'] }}"
-          echo "  gestion-inventory-and-appointment=${{ needs.detect-changes.outputs['gestion-inventory-and-appointment'] }}"
-          echo "  livraison=${{ needs.detect-changes.outputs['livraison'] }}"
-          echo "  payment-service=${{ needs.detect-changes.outputs['payment-service'] }}"
-          echo "  farmer-support=${{ needs.detect-changes.outputs['farmer-support'] }}"
-          echo "  gestion-forum=${{ needs.detect-changes.outputs['gestion-forum'] }}"
-          echo "  pi-cloud-explorer=${{ needs.detect-changes.outputs['pi-cloud-explorer'] }}"
-
       - name: Set up Docker Buildx
 
         uses: docker/setup-buildx-action@v3
 
       - name: Log in to Docker Hub
-        if: ${{ needs.detect-changes.outputs[matrix.name] == 'true' }}
+
         uses: docker/login-action@v3
+
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+
+          username: ${{ secrets.DOCKERHUB_USERNAME  }}
+
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and push image
-        if: ${{ needs.detect-changes.outputs[matrix.name] == 'true' }}
+
         uses: docker/build-push-action@v5
+
         with:
+
           context: ${{ matrix.context }}
+
           file: ${{ matrix.context }}/Dockerfile
+
           push: true
-          # push only the canonical :latest tag to update the existing image
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
+
+          tags: |
+
+            ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:latest
+
+            ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:${{ github.sha }}
+
           cache-from: type=gha
+
           cache-to: type=gha,mode=max
+
           build-args: |
 
             BUILDKIT_INLINE_CACHE=1
