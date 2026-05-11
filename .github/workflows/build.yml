@@ -197,6 +197,28 @@ jobs:
 
         uses: actions/checkout@v4
 
+      - name: Print change-detection debug info
+        run: |
+          echo "matrix.name=${{ matrix.name }}"
+          echo "changed=${{ needs.detect-changes.outputs[matrix.name] }}"
+          echo "detect-changes outputs:"
+          echo "  agriculture-front=${{ needs.detect-changes.outputs['agriculture-front'] }}"
+          echo "  gestion-user-pi-cloud=${{ needs.detect-changes.outputs['gestion-user-pi-cloud'] }}"
+          echo "  assistance-service=${{ needs.detect-changes.outputs['assistance-service'] }}"
+          echo "  eureka=${{ needs.detect-changes.outputs['eureka'] }}"
+          echo "  gateway=${{ needs.detect-changes.outputs['gateway'] }}"
+          echo "  gestion-event=${{ needs.detect-changes.outputs['gestion-event'] }}"
+          echo "  gestion-formation=${{ needs.detect-changes.outputs['gestion-formation'] }}"
+          echo "  gestion-pret=${{ needs.detect-changes.outputs['gestion-pret'] }}"
+          echo "  gestion-reclamation=${{ needs.detect-changes.outputs['gestion-reclamation'] }}"
+          echo "  gestion-vente-location=${{ needs.detect-changes.outputs['gestion-vente-location'] }}"
+          echo "  gestion-inventory-and-appointment=${{ needs.detect-changes.outputs['gestion-inventory-and-appointment'] }}"
+          echo "  livraison=${{ needs.detect-changes.outputs['livraison'] }}"
+          echo "  payment-service=${{ needs.detect-changes.outputs['payment-service'] }}"
+          echo "  farmer-support=${{ needs.detect-changes.outputs['farmer-support'] }}"
+          echo "  gestion-forum=${{ needs.detect-changes.outputs['gestion-forum'] }}"
+          echo "  pi-cloud-explorer=${{ needs.detect-changes.outputs['pi-cloud-explorer'] }}"
+
       - name: Set up Docker Buildx
 
         uses: docker/setup-buildx-action@v3
