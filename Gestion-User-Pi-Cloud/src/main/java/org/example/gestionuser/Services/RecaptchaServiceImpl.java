@@ -21,7 +21,7 @@ public class RecaptchaServiceImpl implements IRecaptchaService {
     @Value("${recaptcha.verify-url}")
     private String verifyUrl;
 
-    @Value("${recaptcha.enabled:true}")
+    @Value("${recaptcha.enabled:false}")
     private boolean recaptchaEnabled;
 
     private final RestTemplate restTemplate = new RestTemplate();
