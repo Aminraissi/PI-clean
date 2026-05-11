@@ -155,6 +155,8 @@ jobs:
 
           file: ${{ matrix.context }}/Dockerfile
 
+          pull: true
+
           push: true
 
           tags: |
@@ -162,7 +164,11 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME  }}/${{ matrix.image }}:latest
 
 
-          cache-from: type=gha
+          cache-from: |
+
+            type=gha
+
+            type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.image }}:latest
 
           cache-to: type=gha,mode=max
 
