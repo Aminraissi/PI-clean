@@ -1,8 +1,6 @@
-package org.example.farmersupport.controller;
+package org.exemple.farmersupport.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Health;
-import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -91,4 +89,5 @@ public class HealthController {
         return ResponseEntity.ok("pong");
     }
 }
+
 
