@@ -23,7 +23,7 @@ export interface PredictionResult {
   providedIn: 'root'
 })
 export class DiseasePredictionService {
-  private apiUrl = environment.plantDiseaseApiUrl;
+  private readonly apiUrl = (environment.plantDiseaseApiUrl || '').replace(/\/+$/, '');
 
   constructor() {}
 
@@ -39,6 +39,10 @@ export class DiseasePredictionService {
     try {
       const response = await fetch(`${this.apiUrl}/predict`, {
         method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'ngrok-skip-browser-warning': 'true'
+        },
         body: formData
       });
 
@@ -55,6 +59,9 @@ export class DiseasePredictionService {
       };
     } catch (error) {
       console.error('Disease prediction error:', error);
+      if (error instanceof TypeError) {
+        throw new Error('Disease API unreachable (DNS/CORS/network). Verify plantDiseaseApiUrl and backend CORS.');
+      }
       throw error;
     }
   }

@@ -228,6 +228,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         'http://127.0.0.1:5173',
         'http://localhost:8089',
         'http://127.0.0.1:8089',
+        window.location.origin,
     ]);
 
     private readonly folioRouteMap: Record<string, string> = {
@@ -288,7 +289,10 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     ngAfterViewInit(): void {
         if (this.explorerFrame && !this.explorerLoaded) {
             const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
-            const base = 'http://localhost:5173/explorer/';
+            const isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            const base = isLocalHost
+                ? 'http://localhost:5173/explorer/'
+                : `${window.location.origin}/explorer/`;
             this.explorerFrame.nativeElement.src = token
                 ? `${base}?token=${encodeURIComponent(token)}`
                 : base;
